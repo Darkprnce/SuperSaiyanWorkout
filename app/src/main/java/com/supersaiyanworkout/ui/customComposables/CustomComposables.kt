@@ -3,6 +3,8 @@ package com.supersaiyanworkout.ui.customComposables
 import android.text.TextUtils
 import android.view.KeyEvent.ACTION_DOWN
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -25,6 +27,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
@@ -37,6 +40,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
@@ -51,7 +55,9 @@ fun CustomText(
     isheading: Boolean = false,
     color: Color? = null,
     txtsize: TextUnit = 14.sp,
-    txtStyle: TextStyle = MaterialTheme.typography.bodyMedium
+    txtStyle: TextStyle = MaterialTheme.typography.bodyMedium,
+    maxLine: Int = 10,
+    textOverFlow: TextOverflow = TextOverflow.Ellipsis
 ) {
     Text(
         modifier = modifier,
@@ -72,7 +78,9 @@ fun CustomText(
             } else {
                 MaterialTheme.colorScheme.onSurface
             },
-        fontSize = txtsize
+        fontSize = txtsize,
+        maxLines = maxLine,
+        overflow = textOverFlow
     )
 }
 
@@ -142,9 +150,9 @@ fun CustomTextField(
     var ispincodeValid by remember { mutableStateOf(true) }
     var isError by remember { mutableStateOf(false) }
 
-    isError = if(iserror){
+    isError = if (iserror) {
         true
-    }else{
+    } else {
         if (isvalidate) {
             !isvalid
         } else if (isemail) {
@@ -280,4 +288,15 @@ fun CustomTextField(
             },
         )
     )
+}
+
+
+fun Modifier.noRippleClickable(
+    onClick: () -> Unit
+): Modifier = composed {
+    clickable(
+        indication = null,
+        interactionSource = remember { MutableInteractionSource() }) {
+        onClick()
+    }
 }

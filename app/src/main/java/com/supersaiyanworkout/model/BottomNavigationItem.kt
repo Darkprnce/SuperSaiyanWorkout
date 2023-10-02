@@ -30,7 +30,7 @@ data class BottomNavigationItem(
             BottomNavigationItem(
                 label = "Progress",
                 icon = Icons.Filled.DateRange,
-                route = Routes.Home.route
+                route = Routes.Progress.route
             ),
         )
     }

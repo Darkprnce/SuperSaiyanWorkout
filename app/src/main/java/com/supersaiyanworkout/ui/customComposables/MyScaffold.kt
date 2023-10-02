@@ -1,6 +1,8 @@
 package com.supersaiyanworkout.ui.customComposables
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -15,14 +17,14 @@ import com.supersaiyanworkout.network.ConnectionUtil.connectivityState
 import com.supersaiyanworkout.network.sealed.ConnectionState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
-@OptIn( ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 @Composable
 fun MyScaffold(
     modifier: Modifier = Modifier,
-    showConnectivity:Boolean = true,
+    showConnectivity: Boolean = true,
     navHostController: NavHostController,
     snackBarState: SnackbarHostState = remember { SnackbarHostState() },
-    content: @Composable (SnackbarHostState) -> Unit,
+    content: @Composable (SnackbarHostState,PaddingValues) -> Unit,
     bottomBar: @Composable (() -> Unit)? = null,
 ) {
     //val snackBarHostState = remember { SnackbarHostState() }
@@ -32,16 +34,15 @@ fun MyScaffold(
     Scaffold(
         modifier = modifier,
         snackbarHost = { SnackbarHost(hostState = snackBarState) },
-        content = { padding ->
-            Column(
-                modifier = Modifier
-                    .padding(padding)
-                    .imePadding()
-            ) {
-                if(showConnectivity){
-                    ConnectivityStatus(isConnected)
-                }
-                content(snackBarState)
+        bottomBar = { bottomBar?.invoke() }) { padding ->
+        Column(
+            modifier = Modifier
+                .imePadding()
+        ) {
+            if (showConnectivity) {
+                ConnectivityStatus(isConnected)
             }
-        }, bottomBar = { bottomBar?.invoke() })
+            content(snackBarState,padding)
+        }
+    }
 }

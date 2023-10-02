@@ -5,6 +5,7 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -54,6 +55,7 @@ import com.supersaiyanworkout.ui.theme.*
 @Composable
 fun WorkoutListScreen(
     modifier: Modifier = Modifier,
+    paddingValues: PaddingValues = PaddingValues(),
     workoutListViewModel: WorkoutListViewModel = hiltViewModel(),
     navController: NavHostController,
     snackBarState: SnackbarHostState,
@@ -173,6 +175,9 @@ fun WorkoutListScreen(
                                     workoutListViewModel.setshowRemoveWorkout(item)
                                 }
                             )
+                        }
+                        item{
+                            Spacer(modifier = Modifier.padding(paddingValues))
                         }
                     }
                 } else {
