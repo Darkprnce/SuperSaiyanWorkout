@@ -27,7 +27,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -36,11 +35,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.supersaiyanworkout.model.BottomNavigationItem
 import kotlin.math.roundToInt
 
@@ -67,7 +68,7 @@ fun CustomBottomBar(
     backgroundColor: Color = MaterialTheme.colorScheme.surfaceVariant
 ) {
     var navPos by remember { mutableIntStateOf(0) }
-    var lastpos by remember { mutableStateOf(selected) }
+    var lastpos by remember { mutableIntStateOf(selected) }
     if (selected != lastpos) {
         lastpos = navPos
     }
@@ -99,6 +100,7 @@ fun CustomBottomBar(
     val scrollState = rememberScrollState()
 
     AnimatedVisibility(
+        modifier = modifier,
         visible = isBottomBarVisible,
         enter = slideInVertically(initialOffsetY = { it }),
         exit = slideOutVertically(targetOffsetY = { it }),
@@ -230,5 +232,15 @@ fun CustomBottomBar(
                 }
             }
         })
+}
 
+@Preview
+@Composable
+fun bottomBarPreview() {
+    CustomBottomBar(
+        list = BottomNavigationItem().bottomNavigationItems(),
+        navController = rememberNavController(),
+        isBottomBarVisible = true,
+        selected = 1,
+    )
 }

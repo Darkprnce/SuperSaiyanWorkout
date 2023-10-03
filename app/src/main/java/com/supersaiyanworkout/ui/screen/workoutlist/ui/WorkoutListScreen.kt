@@ -33,6 +33,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -70,8 +71,7 @@ fun WorkoutListScreen(
         }
         workoutListViewModel.apiState.collect { apiState ->
             when (apiState) {
-                is ValidationState.Loading -> {
-                }
+                is ValidationState.Loading -> {}
 
                 is ValidationState.Error -> {
                     snackBarState.showSnackbar(
@@ -80,12 +80,9 @@ fun WorkoutListScreen(
                     )
                 }
 
-                is ValidationState.Ideal -> {
-                }
+                is ValidationState.Ideal -> {}
 
-                is ValidationState.Success -> {
-
-                }
+                is ValidationState.Success -> {}
             }
         }
     }
@@ -219,6 +216,7 @@ fun WorkoutItem(
             GifImage(
                 imageUrl = workout.image_url!!,
                 contentScale = ContentScale.FillBounds,
+                placeholder = R.drawable.banner,
                 modifier = Modifier
                     .height(150.dp)
                     .fillMaxWidth()
@@ -239,6 +237,23 @@ fun WorkoutItem(
                 color = White,
                 isbold = true,
                 modifier = Modifier.padding(10.dp)
+            )
+        }
+    }
+}
+
+@Preview
+@Composable
+fun WorkoutListPreview() {
+    val list = (1..5).map { WorkoutListBean.Data(id=it,title = "Workout $it", image_url = "") }
+    LazyColumn(modifier = Modifier.fillMaxSize()) {
+        items(
+            list,
+            key = { item -> "workout_${item.id!!}" }) { item ->
+            WorkoutItem(
+                modifier = Modifier,
+                workout = item,
+                onClick = {}, onLongClick = {}
             )
         }
     }
