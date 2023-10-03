@@ -146,7 +146,7 @@ class MainActivity : ComponentActivity() {
                                 list = BottomNavigationItem().bottomNavigationItems(),
                                 navController =navController,
                                 isBottomBarVisible = bottomBarState.value,
-                                selected = navPos
+                                selected = navPos,
                             )
                         })
                 }

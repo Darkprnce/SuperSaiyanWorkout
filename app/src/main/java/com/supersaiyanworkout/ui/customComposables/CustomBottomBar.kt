@@ -8,7 +8,7 @@ import androidx.compose.animation.core.spring
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -18,7 +18,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -35,8 +35,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.layout.boundsInRoot
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
@@ -44,8 +42,6 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import com.supersaiyanworkout.model.BottomNavigationItem
-import com.supersaiyanworkout.ui.theme.Red
-import timber.log.Timber
 import kotlin.math.roundToInt
 
 @Composable
@@ -57,12 +53,14 @@ fun CustomBottomBar(
     selected: Int = 0,
     roundCorner: Dp = 20.dp,
     paddingValues: PaddingValues = PaddingValues(bottom = 10.dp),
-    innerpaddingValues: PaddingValues = PaddingValues(horizontal = 5.dp),
+    innerPaddingValues: PaddingValues = PaddingValues(horizontal = 5.dp),
     elevation: Dp = 3.dp,
     indicatorCorner: RoundedCornerShape = RoundedCornerShape(bottomStart = 5.dp, bottomEnd = 5.dp),
     indicatorHeight: Dp = 5.dp,
     indicatorWidth: Dp = 30.dp,
     indicatorColor: Color = MaterialTheme.colorScheme.primary,
+    indicatorPosTop:Boolean =true,
+    indicatorShow:Boolean =true,
     itemWidth: Dp = 70.dp,
     iconColor: Color = MaterialTheme.colorScheme.primary,
     txtColor: Color = MaterialTheme.colorScheme.onSurface,
@@ -75,21 +73,30 @@ fun CustomBottomBar(
     }
     navPos = selected
 
-    val pxToMove = with(LocalDensity.current) { 30.dp.toPx().roundToInt() }
-    val pxDiff = with(LocalDensity.current) { 80.dp.toPx().roundToInt() }
-    var centerOffset by remember { mutableStateOf(pxToMove) }
+    val itemWidthPx = with(LocalDensity.current) {
+        itemWidth.toPx()
+    }
 
+    val indicatorWidthPx = with(LocalDensity.current) {
+        indicatorWidth.toPx()
+    }
+
+    val centerOffset = ((itemWidthPx - indicatorWidthPx) / 2) + (navPos * itemWidthPx)
+
+    val targetOffset = IntOffset(
+        x = centerOffset.roundToInt(),
+        y = 0
+    )
     val offset by animateIntOffsetAsState(
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioMediumBouncy,
             stiffness = Spring.StiffnessLow
         ),
-        targetValue = IntOffset(
-            centerOffset,
-            0
-        ),
+        targetValue = targetOffset,
         label = "offset"
     )
+
+    val scrollState = rememberScrollState()
 
     AnimatedVisibility(
         visible = isBottomBarVisible,
@@ -106,22 +113,32 @@ fun CustomBottomBar(
                     shape = RoundedCornerShape(roundCorner),
                     modifier = Modifier.padding(paddingValues)
                 ) {
+                    Row(
+                        modifier = Modifier
+                            .padding(innerPaddingValues)
+                            .horizontalScroll(scrollState)
+                    ){
                     Column {
-                        Box(
-                            modifier = Modifier
-                                .offset { offset }
-                                .graphicsLayer {
-                                    scaleX = 1f
-                                    scaleY = 1f
-                                }
-                                .clip(indicatorCorner)
-                                .height(indicatorHeight)
-                                .width(indicatorWidth)
-                                .background(indicatorColor)
-                        )
+                        if(indicatorShow){
+                            if(indicatorPosTop){
+                                Box(
+                                    modifier = Modifier
+                                        .offset { offset }
+                                        .graphicsLayer {
+                                            scaleX = 1f
+                                            scaleY = 1f
+                                        }
+                                        .clip(indicatorCorner)
+                                        .height(indicatorHeight)
+                                        .width(indicatorWidth)
+                                        .background(indicatorColor)
+                                )
+                            }
+                        }
+
                         Row(
                             modifier = Modifier
-                                .padding(innerpaddingValues)
+                                .padding(innerPaddingValues)
                         ) {
                             list.forEachIndexed { index, navigationItem ->
                                 val animVisibleState =
@@ -133,10 +150,6 @@ fun CustomBottomBar(
                                     contentAlignment = Alignment.Center,
                                     modifier = Modifier
                                         .width(itemWidth)
-                                        .border(
-                                            width = 0.8.dp,
-                                            color = Red
-                                        )
                                         .noRippleClickable {
                                             lastpos = navPos
                                             navPos = index
@@ -148,17 +161,6 @@ fun CustomBottomBar(
                                                 }
                                                 launchSingleTop = true
                                                 restoreState = true
-                                            }
-                                        }
-                                        .onGloballyPositioned { layoutCoordinates ->
-                                            val rect =
-                                                layoutCoordinates.boundsInRoot()
-
-                                            if (lastpos != navPos) {
-                                                if (index == navPos) {
-                                                    centerOffset =
-                                                        rect.topCenter.x.toInt() - pxDiff
-                                                }
                                             }
                                         },
                                 ) {
@@ -184,15 +186,16 @@ fun CustomBottomBar(
                                             )
                                         })
                                     androidx.compose.animation.AnimatedVisibility(
-                                        visible = !animVisibleState.currentState && index != navPos,
+                                        //visible = !animVisibleState.currentState && index != navPos,
+                                        visible = index != navPos,
                                         enter = slideInVertically(
                                             animationSpec = spring(
                                                 dampingRatio = Spring.DampingRatioMediumBouncy,
                                                 stiffness = Spring.StiffnessLow
                                             ),
-                                            initialOffsetY = { it }),
+                                            initialOffsetY = { -it }),
                                         exit = slideOutVertically(
-                                            targetOffsetY = { it }),
+                                            targetOffsetY = { -it }),
                                         content = {
                                             Icon(
                                                 navigationItem.icon,
@@ -203,11 +206,26 @@ fun CustomBottomBar(
                                                 )
                                             )
                                         })
-
                                 }
                             }
                         }
-
+                        if(indicatorShow){
+                            if(!indicatorPosTop){
+                                Box(
+                                    modifier = Modifier
+                                        .offset { offset }
+                                        .graphicsLayer {
+                                            scaleX = 1f
+                                            scaleY = 1f
+                                        }
+                                        .clip(indicatorCorner)
+                                        .height(indicatorHeight)
+                                        .width(indicatorWidth)
+                                        .background(indicatorColor)
+                                )
+                            }
+                        }
+                    }
                     }
                 }
             }
